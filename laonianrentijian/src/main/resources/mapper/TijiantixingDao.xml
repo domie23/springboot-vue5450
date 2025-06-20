@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dao.TijiantixingDao">
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        a.id as id
+        ,a.yonghu_id as yonghuId
+        ,a.tijianxiangmu_id as tijianxiangmuId
+        ,a.tijiantixing_date_time as tijiantixingDateTime
+        ,a.tijiantixing_shijian as tijiantixingShijian
+        ,a.tijiantixing_number as tijiantixingNumber
+        ,a.tijiantixing_address as tijiantixingAddress
+        ,a.tijiantixing_phone as tijiantixingPhone
+        ,a.tijiantixing_file as tijiantixingFile
+        ,a.tijiantixing_types as tijiantixingTypes
+        ,a.create_time as createTime
+    </sql>
+    <select id="selectListView" parameterType="map" resultType="com.entity.view.TijiantixingView" >
+        SELECT
+        <include refid="Base_Column_List" />
+
+--         级联表的字段
+        ,tijianxiangmu.tijianxiangmu_name as tijianxiangmuName
+        ,tijianxiangmu.tijianxiangmu_types as tijianxiangmuTypes
+        ,tijianxiangmu.tijianxiangmu_photo as tijianxiangmuPhoto
+        ,tijianxiangmu.tijianxiangmu_content as tijianxiangmuContent
+        ,yonghu.yonghu_name as yonghuName
+        ,yonghu.yonghu_photo as yonghuPhoto
+        ,yonghu.yonghu_phone as yonghuPhone
+        ,yonghu.yonghu_id_number as yonghuIdNumber
+        ,yonghu.yonghu_email as yonghuEmail
+        ,yonghu.yonghu_address as yonghuAddress
+        ,yonghu.yonghu_chushengriqi as yonghuChushengriqi
+        ,yonghu.yonghu_delete as yonghuDelete
+
+        FROM tijiantixing  a
+        left JOIN tijianxiangmu tijianxiangmu ON a.tijianxiangmu_id = tijianxiangmu.id
+        left JOIN yonghu yonghu ON a.yonghu_id = yonghu.id
+
+        <where>
+            <if test="params.ids != null">
+                and a.id in
+                <foreach item="item" index="index" collection="params.ids" open="(" separator="," close=")">
+                #{item}
+                </foreach>
+            </if>
+            <if test="params.yonghuId != null and params.yonghuId != ''">
+                and (
+                    a.yonghu_id = #{params.yonghuId}
+                )
+            </if>
+            <if test="params.tijianxiangmuId != null and params.tijianxiangmuId != ''">
+                and (
+                    a.tijianxiangmu_id = #{params.tijianxiangmuId}
+                )
+            </if>
+            <if test=" params.tijiantixingDateTimeStart != '' and params.tijiantixingDateTimeStart != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.tijiantixing_date_time) >= UNIX_TIMESTAMP(#{params.tijiantixingDateTimeStart}) ]]>
+            </if>
+            <if test=" params.tijiantixingDateTimeEnd != '' and params.tijiantixingDateTimeEnd != null ">
+                <![CDATA[  and UNIX_TIMESTAMP(a.tijiantixing_date_time) <= UNIX_TIMESTAMP(#{params.tijiantixingDateTimeEnd}) ]]>
+            </if>
+            <if test=" params.tijiantixingShijian != '' and params.tijiantixingShijian != null and params.tijiantixingShijian != 'null' ">
+                and a.tijiantixing_shijian like CONCAT('%',#{params.tijiantixingShijian},'%')
+            </if>
+            <if test="params.tijiantixingNumberStart != null ">
+                <![CDATA[  and a.tijiantixing_number >= #{params.tijiantixingNumberStart}   ]]>
+            </if>
+            <if test="params.tijiantixingNumberEnd != null ">
+                <![CDATA[  and a.tijiantixing_number <= #{params.tijiantixingNumberEnd}   ]]>
+            </if>
+            <if test=" params.tijiantixingAddress != '' and params.tijiantixingAddress != null and params.tijiantixingAddress != 'null' ">
+                and a.tijiantixing_address like CONCAT('%',#{params.tijiantixingAddress},'%')
+            </if>
+            <if test=" params.tijiantixingPhone != '' and params.tijiantixingPhone != null and params.tijiantixingPhone != 'null' ">
+                and a.tijiantixing_phone like CONCAT('%',#{params.tijiantixingPhone},'%')
+            </if>
+            <if test="params.tijiantixingTypes != null and params.tijiantixingTypes != ''">
+                and a.tijiantixing_types = #{params.tijiantixingTypes}
+            </if>
+
+                <!-- 判断体检项目的id不为空 -->
+            <if test=" params.tijianxiangmuIdNotNull != '' and params.tijianxiangmuIdNotNull != null and params.tijianxiangmuIdNotNull != 'null' ">
+                and a.tijianxiangmu_id IS NOT NULL
+            </if>
+            <if test=" params.tijianxiangmuName != '' and params.tijianxiangmuName != null and params.tijianxiangmuName != 'null' ">
+                and tijianxiangmu.tijianxiangmu_name like CONCAT('%',#{params.tijianxiangmuName},'%')
+            </if>
+            <if test="params.tijianxiangmuTypes != null  and params.tijianxiangmuTypes != ''">
+                and tijianxiangmu.tijianxiangmu_types = #{params.tijianxiangmuTypes}
+            </if>
+
+            <if test=" params.tijianxiangmuContent != '' and params.tijianxiangmuContent != null and params.tijianxiangmuContent != 'null' ">
+                and tijianxiangmu.tijianxiangmu_content like CONCAT('%',#{params.tijianxiangmuContent},'%')
+            </if>
+                <!-- 判断用户的id不为空 -->
+            <if test=" params.yonghuIdNotNull != '' and params.yonghuIdNotNull != null and params.yonghuIdNotNull != 'null' ">
+                and a.yonghu_id IS NOT NULL
+            </if>
+            <if test=" params.yonghuName != '' and params.yonghuName != null and params.yonghuName != 'null' ">
+                and yonghu.yonghu_name like CONCAT('%',#{params.yonghuName},'%')
+            </if>
+            <if test=" params.yonghuPhone != '' and params.yonghuPhone != null and params.yonghuPhone != 'null' ">
+                and yonghu.yonghu_phone like CONCAT('%',#{params.yonghuPhone},'%')
+            </if>
+            <if test=" params.yonghuIdNumber != '' and params.yonghuIdNumber != null and params.yonghuIdNumber != 'null' ">
+                and yonghu.yonghu_id_number like CONCAT('%',#{params.yonghuIdNumber},'%')
+            </if>
+            <if test=" params.yonghuEmail != '' and params.yonghuEmail != null and params.yonghuEmail != 'null' ">
+                and yonghu.yonghu_email like CONCAT('%',#{params.yonghuEmail},'%')
+            </if>
+            <if test=" params.yonghuAddress != '' and params.yonghuAddress != null and params.yonghuAddress != 'null' ">
+                and yonghu.yonghu_address like CONCAT('%',#{params.yonghuAddress},'%')
+            </if>
+            <if test=" params.yonghuChushengriqi != '' and params.yonghuChushengriqi != null and params.yonghuChushengriqi != 'null' ">
+                and yonghu.yonghu_chushengriqi like CONCAT('%',#{params.yonghuChushengriqi},'%')
+            </if>
+            <if test="params.yonghuDeleteStart != null  and params.yonghuDeleteStart != '' ">
+                <![CDATA[  and yonghu.yonghu_delete >= #{params.yonghuDeleteStart}   ]]>
+            </if>
+            <if test="params.yonghuDeleteEnd != null  and params.yonghuDeleteEnd != '' ">
+                <![CDATA[  and yonghu.yonghu_delete <= #{params.yonghuDeleteEnd}   ]]>
+            </if>
+            <if test="params.yonghuDelete != null  and params.yonghuDelete != '' ">
+                and yonghu.yonghu_delete = #{params.yonghuDelete}
+            </if>
+        </where>
+
+        order by a.${params.orderBy} desc 
+    </select>
+
+</mapper>
